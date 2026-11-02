@@ -1,115 +1,107 @@
+// =====================================
+// NEXPILOT 2.0 — AI CONNECTION
+// =====================================
 
-const chat = document.getElementById("chat");
-const promptInput = document.getElementById("prompt");
-const sendButton = document.getElementById("sendButton");
-
-let busy = false;
+let nexpilotEngine = null;
+let nexpilotLoading = false;
 let conversationHistory = [];
 
-function addMessage(text, type) {
-  const message = document.createElement("div");
+const MODEL_NAME = "Qwen2.5-0.5B-Instruct-q4f16_1-MLC";
 
-  message.className = "message " + type;
-  message.textContent = text;
+// Load the existing NexPilot AI engine
+async function loadNexpilot() {
+    if (nexpilotEngine) return nexpilotEngine;
 
-  chat.appendChild(message);
-  chat.scrollTop = chat.scrollHeight;
+    if (nexpilotLoading) {
+        throw new Error("NexPilot is already loading.");
+    }
 
-  return message;
+    nexpilotLoading = true;
+
+    try {
+        const { CreateMLCEngine } =
+            await import("https://esm.run/@mlc-ai/web-llm");
+
+        nexpilotEngine = await CreateMLCEngine(MODEL_NAME);
+
+        console.log("NexPilot Core connected!");
+
+        return nexpilotEngine;
+
+    } finally {
+        nexpilotLoading = false;
+    }
 }
 
-function suggest(text) {
-  promptInput.value = text;
-  sendMessage();
-}
+// Generate an AI response
+async function directorResponse(text) {
+    const engine = await loadNexpilot();
 
-function newChat() {
-  conversationHistory = [];
-  chat.innerHTML = `
-    <div class="welcome">
-      <div class="logo">✦</div>
-      <h1>Welcome to NexPilot.</h1>
-      <p>Your ideas. Your projects. Your AI.</p>
-    </div>
-  `;
-}
+    const messages = [
+        {
+            role: "system",
+            content: `
+You are NexPilot, the intelligent AI core of NexPilot 2.0.
 
-async function sendMessage() {
-  if (busy) return;
+You help users with:
+- Coding
+- Business
+- Projects
+- Learning
+- Planning
+- Creative ideas
 
-  const text = promptInput.value.trim();
+Be friendly, intelligent, clear, and helpful.
+Remember the conversation context provided to you.
+`
+        },
+        ...conversationHistory.slice(-12),
+        {
+            role: "user",
+            content: text
+        }
+    ];
 
-  if (!text) return;
-
-  busy = true;
-
-  addMessage(text, "user");
-  promptInput.value = "";
-
-  sendButton.disabled = true;
-  sendButton.textContent = "...";
-
-  const responseElement = addMessage(
-    "NexPilot is thinking...",
-    "director"
-  );
-
-  try {
-    conversationHistory.push({
-      role: "user",
-      content: text
+    const response = await engine.chat.completions.create({
+        messages: messages,
+        temperature: 0.7,
+        max_tokens: 500
     });
 
-    const response = await fetch(
-      "/api/chat",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          messages: conversationHistory
-        })
-      }
+    return response.choices[0].message.content.trim();
+}
+
+// Send a message
+async function sendMessage() {
+    const input = document.getElementById("prompt");
+    const text = input.value.trim();
+
+    if (!text) return;
+
+    addMessage(text, "user");
+    input.value = "";
+
+    const thinking = addMessage(
+        "NexPilot is thinking...",
+        "director"
     );
 
-    if (!response.ok) {
-      throw new Error("AI server returned " + response.status);
+    try {
+        const answer = await directorResponse(text);
+
+        thinking.textContent = answer;
+
+        conversationHistory.push(
+            { role: "user", content: text },
+            { role: "assistant", content: answer }
+        );
+
+    } catch (error) {
+        console.error(error);
+
+        thinking.textContent =
+            "NexPilot couldn't connect. Check the browser console for details.";
     }
-
-    const data = await response.json();
-
-    if (!data.answer) {
-      throw new Error("No answer received");
-    }
-
-    responseElement.textContent = data.answer;
-
-    conversationHistory.push({
-      role: "assistant",
-      content: data.answer
-    });
-
-    if (conversationHistory.length > 30) {
-      conversationHistory = conversationHistory.slice(-30);
-    }
-
-  } catch (error) {
-    console.error("NexPilot error:", error);
-
-    responseElement.textContent =
-      "I couldn't connect to my AI brain. Please check that the backend is deployed and try again.";
-  } finally {
-    busy = false;
-    sendButton.disabled = false;
-    sendButton.textContent = "↑";
-    promptInput.focus();
-  }
 }
 
-promptInput.addEventListener("keydown", function(event) {
-  if (event.key === "Enter" && !event.shiftKey) {
-    event.preventDefault();
-    sendMessage();
-  }
-});
+console.log("NexPilot 2.0 connection system loaded.");
