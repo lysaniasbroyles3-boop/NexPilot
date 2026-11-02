@@ -11,6 +11,64 @@ let conversationHistory = [];
 const MODEL_NAME = "Qwen2.5-0.5B-Instruct-q4f16_1-MLC";
 
 // =====================================
+// NEXPILOT UNIVERSAL AI CONTROLLER
+// =====================================
+
+let activeAIMode = "none";
+
+async function detectAICapabilities() {
+    const capabilities = {
+        webgpu: !!navigator.gpu,
+        cloud: false
+    };
+
+    if (capabilities.webgpu) {
+        try {
+            const adapter = await navigator.gpu.requestAdapter();
+            capabilities.webgpu = !!adapter;
+        } catch (error) {
+            capabilities.webgpu = false;
+        }
+    }
+
+    console.log("NexPilot capabilities:", capabilities);
+
+    return capabilities;
+}
+
+async function selectAIEngine() {
+    const capabilities = await detectAICapabilities();
+
+    if (capabilities.webgpu) {
+        try {
+            console.log("Attempting local AI...");
+            activeAIMode = "local";
+
+            return await loadLocalAI();
+
+        } catch (error) {
+            console.warn("Local AI unavailable:", error);
+        }
+    }
+
+    // Cloud mode will be enabled when we configure
+    // a real, secure cloud AI backend.
+    activeAIMode = "unavailable";
+
+    throw new Error(
+        "Local AI is unavailable and cloud AI is not configured yet."
+    );
+}
+
+async function loadLocalAI() {
+    return await loadNexpilot();
+}
+
+function getAIMode() {
+    return activeAIMode;
+}
+
+// =====================================
 // LOAD AI MODEL
 // =====================================
 
@@ -69,7 +127,7 @@ function addMessage(text, sender) {
 // =====================================
 
 async function directorResponse(text) {
-    const engine = await loadNexpilot();
+  const engine = await selectAIEngine();
 
     const messages = [
         {
