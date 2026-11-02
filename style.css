@@ -408,3 +408,33 @@ textarea {
 @keyframes loadingBar {
     to { width: 100%; }
 }
+
+/* NEXPILOT CHAT MESSAGES */
+
+.message {
+    max-width: 75%;
+    padding: 14px 18px;
+    margin: 12px 0;
+    border-radius: 15px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.message.user {
+    margin-left: auto;
+    background: #713de5;
+    color: white;
+}
+
+.message.director {
+    margin-right: auto;
+    background: #1d1b2c;
+    color: #eeeeff;
+    border: 1px solid #49356d;
+}
+
+#sendButton:disabled {
+    opacity: 0.5;
+    cursor: wait;
+}
