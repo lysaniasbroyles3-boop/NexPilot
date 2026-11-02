@@ -293,3 +293,118 @@ textarea {
     max-width: 92%;
   }
 }
+
+/* =================================
+   NEXPILOT STARTUP ANIMATION
+================================= */
+
+#startup {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #050510;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: opacity 0.9s ease, visibility 0.9s ease;
+}
+
+#startup.finished {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+#startup h1 {
+    font-size: 38px;
+    letter-spacing: 12px;
+    margin: 25px 0 8px;
+    color: #c9a7ff;
+    text-shadow: 0 0 25px #914dff;
+    animation: titleGlow 2s infinite alternate;
+}
+
+#startup p {
+    color: #8984a8;
+    letter-spacing: 4px;
+    font-size: 10px;
+}
+
+.startup-core {
+    width: 125px;
+    height: 125px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.core-center {
+    font-size: 55px;
+    color: #c69aff;
+    text-shadow: 0 0 30px #9b55ff;
+    animation: corePulse 1.5s infinite ease-in-out;
+}
+
+.core-ring {
+    position: absolute;
+    inset: 0;
+    border: 2px solid #a65cff;
+    border-radius: 50%;
+    box-shadow: 0 0 20px #873dff;
+    animation: ringSpin 4s linear infinite;
+}
+
+.ring-two {
+    inset: 12px;
+    border-color: #4fdcff;
+    border-style: dashed;
+    animation-direction: reverse;
+    animation-duration: 6s;
+}
+
+.loading-track {
+    width: 220px;
+    height: 4px;
+    background: #242039;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 35px;
+}
+
+.loading-progress {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #813dff, #54dfff);
+    box-shadow: 0 0 15px #9b55ff;
+    animation: loadingBar 2.8s ease forwards;
+}
+
+#startup-text {
+    color: #a99acb;
+    font-size: 10px;
+    letter-spacing: 3px;
+    margin-top: 17px;
+}
+
+@keyframes ringSpin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes corePulse {
+    50% {
+        transform: scale(1.2);
+        opacity: 0.7;
+    }
+}
+
+@keyframes titleGlow {
+    from { text-shadow: 0 0 10px #914dff; }
+    to { text-shadow: 0 0 35px #b77aff; }
+}
+
+@keyframes loadingBar {
+    to { width: 100%; }
+}
