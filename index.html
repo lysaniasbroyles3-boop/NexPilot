@@ -81,12 +81,18 @@
 
   <script src="script.js"></script>
 
+
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+(function () {
     const startup = document.getElementById("startup");
     const startupText = document.getElementById("startup-text");
 
-    if (!startup) return;
+    if (!startup) {
+        console.error("NexPilot startup screen not found!");
+        return;
+    }
+
+    console.log("NexPilot startup sequence started!");
 
     setTimeout(() => {
         if (startupText) {
@@ -109,8 +115,9 @@ document.addEventListener("DOMContentLoaded", function () {
     setTimeout(() => {
         startup.classList.add("finished");
     }, 3300);
-});
+})();
 </script>
+
 
 </body>
 </html>
